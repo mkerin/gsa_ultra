@@ -15,9 +15,18 @@ def solution(n, m, k, v):
     T[n-k+1] num of strings w/ all substrings > v
     """
     T = GenT(n, k, v)
-    res = sum(T[m:]) % MOD
-    print(T)
+    dist = GenDist(T)
+    res = sum(dist[m:]) % MOD
     return res
+
+
+def GenDist(T):
+    """
+    dist[i] = #{strings s with i substrings of value > v}
+    in functional form for debugging purposes
+    """
+    dist = [sum(t) for t in T]
+    return dist
 
 
 def GenT(n, k, v):
@@ -41,15 +50,12 @@ def GenT(n, k, v):
     Ext.
     implement such that don't keep recreating T.
     """
-    T = [[0 for l in range(2 ** k)] for i in range(n - k + 1)]
+    T = [[0 for l in range(2 ** k)] for i in range((n - k + 1) + 1)]
     A = [0 for x in range(v+1)] + [1 for x in range(2**k - (v+1))]
     
     # Initialise
     for l, x in enumerate(A):
         T[x][l] = 1
-    
-    # Check looks right
-    print(T[:2])
     
     # DP
     # start from ii = lvl+1 and work backwards
@@ -61,7 +67,7 @@ def GenT(n, k, v):
             for ll in range(2 ** k):
                 
                 # 2 prev strings feed into string at ll
-                ll1 = (ll % 2 ** (k-1))
+                ll1 = ll // 2
                 ll2 = ll1 + 2 ** (k-1)
                 
                 # Which i to sum from depends on if A[ll] = 0, 1
@@ -73,10 +79,7 @@ def GenT(n, k, v):
                     # Not elegant but avoids IndexError
                     Ti[ll] = 0
             T[ii] = Ti
-    
-    # Sum over l
-    res = [sum(t) for t in T]
-    return res
+    return T
 
 
 if __name__ == '__main__':
