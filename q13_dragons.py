@@ -10,6 +10,7 @@ max_int = 10**9
 Point = namedtuple("Point", ["x", "y", "theta"])
 View = namedtuple("View", ["pid", "dist"])
 
+
 def solution(T):
     """
     We want to build an object that holds the
@@ -36,9 +37,16 @@ def solution(T):
         points.append(Point(x1, y1, XYtoTheta(x1, y1)))
         points.append(Point(x2, y2, XYtoTheta(x2, y2)))
     print("Points read in")
-    points.sort(key=lambda x: x.theta)
-    print(points[0])
-    print(points[1])
+    try:
+        points.sort(key=lambda x: x.theta)
+    except:
+        print("unsure why this doesn't work")
+        print(points[0])
+        p = points[0]
+        print(type(p.x))
+        print(type(p[0]))
+        print(type(p.y))
+        print(type(p.theta))
     
     print("Generating midpoints")
     midpoints = GenMidpoints(points)
@@ -46,16 +54,21 @@ def solution(T):
     
     print("Evaluating closest paintings")
     for pid, p in enumerate(T):
-        r1 = XYtoTheta(p[0], p[1])
-        r2 = XYtoTheta(p[2], p[3])
+        angle_to_edges = XYtoTheta(p[0], p[1]), XYtoTheta(p[2], p[3])
+        r1, r2 = min(angle_to_edges), max(angle_to_edges)
         mid_index = [i for i, mid in enumerate(midpoints) if mid.theta > r1 and mid.theta < r2]
         for ind in mid_index:
             midpoint = midpoints[ind]
             d = DistFromOrigin(midpoint, p)
             if d < V[ind].dist:
                 V[ind] = View(pid, d)
+
     visible = set(v.pid for v in V)
-    return len(visible)
+    res = len(visible)
+    if None in visible:
+        res -= 1
+    return res
+
 
 def XYtoTheta(x, y):
     """
@@ -68,8 +81,11 @@ def XYtoTheta(x, y):
         raise TypeError("a float is required")
     return theta
 
+
 def DistFromOrigin(midpoint, painting):
     """
+    Distance from origin using cramers rule
+    https://en.wikipedia.org/wiki/Cramer%27s_rule
     """
     Lp = Line((painting[0], painting[1]), (painting[2], painting[3]))
     Lo = Line((midpoint.x, midpoint.y), (0, 0))
@@ -77,22 +93,25 @@ def DistFromOrigin(midpoint, painting):
     d = math.sqrt(x ** 2 + y ** 2)
     return d
 
+
 def Line(p1, p2):
     A = (p1[1] - p2[1])
     B = (p2[0] - p1[0])
     C = (p1[0]*p2[1] - p2[0]*p1[1])
     return A, B, -C
 
+
 def Intersection(L1, L2):
-    D  = L1[0] * L2[1] - L1[1] * L2[0]
+    D = L1[0] * L2[1] - L1[1] * L2[0]
     Dx = L1[2] * L2[1] - L1[1] * L2[2]
     Dy = L1[0] * L2[2] - L1[2] * L2[0]
     if D != 0:
-        x = Dx / D
-        y = Dy / D
+        x = float(Dx) / D
+        y = float(Dy) / D
         return x, y
     else:
         return False
+
 
 def GenMidpoints(points):
     """
@@ -124,7 +143,7 @@ def GenMidpoints(points):
 
 
 if __name__ == '__main__':
-    with open("13d_input.txt") as f:
+    with open("q13_input.txt") as f:
         T = []
         for line in f:
             p = [int(x) for x in line.rstrip("/n").split()]
