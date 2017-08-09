@@ -6,6 +6,36 @@ from fractions import gcd
 import math
 
 
+def GenOrthDistFromOrigin(p1, v1):
+    """
+    Orthogonal distance from the origin to the vector
+    defined by p1 + v1.
+    Return as +ve if in y >= 0 plane.
+    """
+    if p1 == (0, 0):
+        return 0
+    
+    if 0 in v1:
+        j = v1.index(0)
+        orth_vec = [0, 0]
+        orth_vec[j] = 1
+    else:
+        orth_vec = -1 * v1[0], v1[1]
+    
+    L1 = Line(p1, (p1[0] + v1[0], p1[1] + v1[1]))
+    L2 = Line((0, 0), orth_vec)
+    try:
+        x, y = Intersection(L1, L2)
+    except TypeError:
+        print(p1, v1, orth_vec)
+        raise TypeError
+    d = Dist((0, 0), (x, y))
+    if y >= 0:
+        return d
+    else:
+        return -d
+
+
 def solution(D):
     """
     Save vectors from each point to a dict
@@ -15,31 +45,45 @@ def solution(D):
     parrallel_pts = dict()
     vectors_dict = dict()
     for pair in it.combinations(D, 2):
-        vec = GenVector(pair[0], pair[1])
-        vectors_dict[pair] = vec
-        if vec not in parrallel_pts:
-            parrallel_pts[vec] = []
-        parrallel_pts[vec].append(pair)
+        unit_vec = GenVector(pair[0], pair[1])
+        orth_dist = GenOrthDistFromOrigin(pair[0], unit_vec)
+        vectors_dict[pair] = unit_vec
+        
+        if unit_vec not in parrallel_pts:
+            parrallel_pts[unit_vec] = dict()
+        parrallel_pts[unit_vec].setdefault(orth_dist, []).append(pair)
 
     # Want vectors parrallel to multiple pairs
     parrallel_pts = {key: val for key, val in parrallel_pts.items() if len(val) > 1}
     
     # Compute areas.
     A = 0
-    for unit_vec, pairs in parrallel_pts.items():
-        for pair1, pair2 in it.combinations(pairs, 2):
-            # continue if 1 point repeated
-            if len(set([pair1[0], pair1[1], pair2[0], pair2[1]])) < 4:
-                continue
-            
-            # continue if all 4 points on same 1D plane
-            orth_vec = DictLookup(pair1[0], pair2[0], vectors_dict)
-            
-            if orth_vec != unit_vec:
-                a = Area(pair1, pair2, unit_vec)
+    for unit_vec, inner_dict in parrallel_pts.items():
+        for orth_dist1, orth_dist2 in it.combinations(inner_dict.keys(), 2):
+            for pair1, pair2 in it.product(inner_dict[orth_dist1],
+                                           inner_dict[orth_dist2]):
+                x = Dist(pair1[0], pair1[1])
+                y = Dist(pair2[0], pair2[1])
+                h = abs(orth_dist2 - orth_dist1)
+                a = (x+y) * h / 2
                 if IsRhombus1(pair1, pair2, vectors_dict):
                     a *= 0.5
                 A += a
+
+    # for unit_vec, pairs in parrallel_pts.items():
+    #     for pair1, pair2 in it.combinations(pairs, 2):
+    #         # continue if 1 point repeated
+    #         if len(set([pair1[0], pair1[1], pair2[0], pair2[1]])) < 4:
+    #             continue
+    #         
+    #         # continue if all 4 points on same 1D plane
+    #         orth_vec = DictLookup(pair1[0], pair2[0], vectors_dict)
+    #         
+    #         if orth_vec != unit_vec:
+    #             a = Area(pair1, pair2, unit_vec)
+    #             if IsRhombus1(pair1, pair2, vectors_dict):
+    #                 a *= 0.5
+    #             A += a
 
     # Diagnostics
     # for unit_vec, pairs in parrallel_pts.items():
@@ -113,11 +157,12 @@ def Intersection(L1, L2):
         y = float(Dy) / D
         return x, y
     else:
+        print(L1, L2)
         return False
 
 
 def Dist(p1, p2):
-    # Distance between two points
+    """Distance between two points (x1, y1), (x2, y2)."""
     d = math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
     return d
 
@@ -168,6 +213,8 @@ def IsParrallel(v1, v2):
 
 
 if __name__ == '__main__':
+    D = ((0, 0), (1, 0), (1, 1), (0, 1), (1, 2))
+    print(solution(D))
     D = []
     with open('q1_input.txt') as f:
         for line in f:
