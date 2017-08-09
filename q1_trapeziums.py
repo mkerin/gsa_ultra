@@ -14,14 +14,7 @@ def GenOrthDistFromOrigin(p1, v1):
     """
     if p1 == (0, 0):
         return 0
-    
-    if 0 in v1:
-        j = v1.index(0)
-        orth_vec = [0, 0]
-        orth_vec[j] = 1
-    else:
-        orth_vec = -1 * v1[0], v1[1]
-    
+    orth_vec = -1 * v1[1], v1[0]
     L1 = Line(p1, (p1[0] + v1[0], p1[1] + v1[1]))
     L2 = Line((0, 0), orth_vec)
     try:
@@ -34,6 +27,10 @@ def GenOrthDistFromOrigin(p1, v1):
         return d
     else:
         return -d
+
+
+def GenParrallelPts(D):
+    pass
 
 
 def solution(D):
@@ -57,8 +54,6 @@ def solution(D):
     # Want vectors parrallel to multiple pairs
     parrallel_pts = {key: val for key, val in parrallel_pts.items() if len(val) > 1}
     
-    # for key in parrallel_pts.keys():
-    #     print("{}: {}".format(key, parrallel_pts[key]))
     # Compute areas.
     A = 0
     for unit_vec, inner_dict in parrallel_pts.items():
@@ -69,29 +64,10 @@ def solution(D):
                 y = Dist(pair2[0], pair2[1])
                 h = abs(orth_dist2 - orth_dist1)
                 a = (x+y) * h / 2
-                print("{}, {}: {}".format(pair1, pair2, a))
                 if IsRhombus1(pair1, pair2, vectors_dict):
+                # if IsRhombus3(pair1, pair2, unit_vec):
                     a *= 0.5
                 A += a
-
-    # for unit_vec, pairs in parrallel_pts.items():
-    #     for pair1, pair2 in it.combinations(pairs, 2):
-    #         # continue if 1 point repeated
-    #         if len(set([pair1[0], pair1[1], pair2[0], pair2[1]])) < 4:
-    #             continue
-    #         
-    #         # continue if all 4 points on same 1D plane
-    #         orth_vec = DictLookup(pair1[0], pair2[0], vectors_dict)
-    #         
-    #         if orth_vec != unit_vec:
-    #             a = Area(pair1, pair2, unit_vec)
-    #             if IsRhombus1(pair1, pair2, vectors_dict):
-    #                 a *= 0.5
-    #             A += a
-
-    # Diagnostics
-    # for unit_vec, pairs in parrallel_pts.items():
-    #     print("{}: {}".format(unit_vec, len(pairs)))
     return "{:0.2f}".format(10*A).replace(".", "")
 
 
@@ -107,42 +83,6 @@ def GenVector(p1, p2, irred=True):
             k = 1
         res = (res[0] // k, res[1] // k)
     return tuple(res)
-
-
-def Area(pair1, pair2, unit_vec):
-    """
-    Compute area from pairs,
-    assumed that they define parrallel lines.
-    pair1: a tuple
-        eg. pair1 = ((x1, y1), (x2, y2))
-    Similar for pair2.
-    A = (a+b) * h / 2
-    Use Cramers Rule to find h
-    https://en.wikipedia.org/wiki/Cramer%27s_rule
-    """
-    a = Dist(pair1[0], pair1[1])
-    b = Dist(pair2[0], pair2[1])
-    
-    if 0 in unit_vec:
-        j = unit_vec.index(0)
-        h = abs(pair1[0][j] - pair2[0][j])
-    else:
-        # orth_vec = -1 * unit_vec[0], unit_vec[1]
-        # L1 = Line(pair1[0], (pair1[0][0] + orth_vec[0], pair1[0][1] + orth_vec[1]))
-        # L2 = Line(pair2[0], pair2[1])
-        # try:
-        #     x, y = Intersection(L1, L2)
-        # except TypeError:
-        #     print(pair1, pair2)
-        #     raise TypeError
-        # h = Dist(pair1[0], (x, y))
-        w = (pair1[0][0] - pair2[0][0], pair1[0][1] - pair2[0][1])
-        v = pair1[0][0] - pair1[1][0], pair1[0][1] - pair1[1][1]
-        mag = float(sum(i[0] * i[1] for i in zip(w, v))) / sum([v[0] ** 2 + v[1] ** 2])
-        v_orth = w[0] - mag * v[0], w[1] - mag * v[1]
-        h = math.sqrt(v_orth[0] ** 2 + v_orth[1] ** 2)
-    
-    return (a+b) * h / 2
 
 
 def Line(p1, p2):
@@ -182,6 +122,25 @@ def DictLookup(point1, point2, vectors_dict):
     return vec
 
 
+def IsRhombus3(pair1, pair2, unit_vec):
+    # Check to for other parralel lines
+    tol = 0.00001
+    p1, _ = pair1
+    orth_vec = -1 * unit_vec[1], unit_vec[0]
+    for p in pair2:
+        if 0 in orth_vec:
+            j = orth_vec.index(0)
+            if p1[j] != p[j]:
+                break
+            else:
+                return True
+        tx = float(p1[0] - p[0]) / orth_vec[0]
+        ty = float(p1[1] - p[1]) / orth_vec[1]
+        if abs(tx - ty) < tol:
+            return True
+    return False
+
+
 def IsRhombus1(pair1, pair2, vectors_dict):
     # Check to for other parralel lines
     l1 = DictLookup(pair1[0], pair2[0], vectors_dict)
@@ -214,11 +173,7 @@ def IsParrallel(v1, v2):
     return False
 
 
-
-
 if __name__ == '__main__':
-    D = ((0, 0), (1, 0), (1, 1), (0, 1), (1, 2))
-    print(solution(D))
     D = []
     with open('q1_input.txt') as f:
         for line in f:
