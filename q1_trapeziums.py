@@ -6,54 +6,39 @@ from fractions import gcd
 import math
 
 
-def GenOrthDistFromOrigin(p1, v1):
-    """
-    Orthogonal distance from the origin to the vector
-    defined by p1 + v1.
-    Return as +ve if in y >= 0 plane.
-    """
-    if p1 == (0, 0):
-        return 0
-    orth_vec = -1 * v1[1], v1[0]
-    L1 = LineTriple(p1, (p1[0] + v1[0], p1[1] + v1[1]))
-    L2 = LineTriple((0, 0), orth_vec)
-    try:
-        x, y = Intersection(L1, L2)
-    except TypeError:
-        print(p1, v1, orth_vec)
-        raise TypeError
-    d = Dist((0, 0), (x, y))
-    if y >= 0:
-        return d
-    else:
-        return -d
-
-
 def solution(D):
     """
-    Save vectors from each point to a dict
-    Should give all parrallel lines.
+    General approach:
+    1. Examine all possible line-segments and compute a 'unit' vector and
+       the orthogonal distance between this unit vector and the origin.
+    2. Store line-segments in a dict of dicts: parallel_pts.
+       The upper dict holds dicts of all parallel line-segments, and the
+       lower dict stores the length of line segments occurring on the same
+       plane.
+    3. Filter segments that are only parallel to others on the same plane.
+       ie the Area is zero.
+    4. Compute the sum of all trapezium areas, noting that if two parallel
+       line segments are the same length this implies a rhombus has occurred.
     """
-    # Create dict of parrallel lines
-    print("Create Parrallel points")
-    parrallel_pts = dict()
-    # vectors_dict = dict()
+    print("Create nested dicts of parallel points on the same plane")
+    parallel_pts = dict()
     for pair in it.combinations(D, 2):
         unit_vec = GenVector(pair[0], pair[1])
         orth_dist = GenOrthDistFromOrigin(pair[0], unit_vec)
-        # vectors_dict[pair] = unit_vec
         
-        if unit_vec not in parrallel_pts:
-            parrallel_pts[unit_vec] = dict()
+        if unit_vec not in parallel_pts:
+            parallel_pts[unit_vec] = dict()
         x = Dist(pair[0], pair[1])
-        parrallel_pts[unit_vec].setdefault(orth_dist, []).append(x)
+        parallel_pts[unit_vec].setdefault(orth_dist, []).append(x)
 
     # Want vectors parrallel to multiple pairs
-    parrallel_pts = {key: val for key, val in parrallel_pts.items() if len(val) > 1}
+    parallel_pts = {key: val for key, val in parallel_pts.items() if len(val) > 1}
     
-    # Compute areas.
+    # Compute area of all trapeziums with formula (x + y) * h / 2
+    # if opposite side lengths are identical -> we have a trapezium, hence
+    # compute only half area a = x * h / 2
     A = 0
-    for unit_vec, inner_dict in parrallel_pts.items():
+    for unit_vec, inner_dict in parallel_pts.items():
         for orth_dist1, orth_dist2 in it.combinations(inner_dict.keys(), 2):
             h = abs(orth_dist2 - orth_dist1)
             segs = sum(x if x == y else x+y for x, y in it.product(inner_dict[orth_dist1], inner_dict[orth_dist2]))
@@ -62,28 +47,42 @@ def solution(D):
     return "{:0.2f}".format(10*A).replace(".", "")
 
 
-def GenVector(p1, p2, irred=True):
+def GenOrthDistFromOrigin(p1, v1):
     """
-    Return vector from one point to the other.
-    Preferably with same orientation + irreducible.
+    Orthogonal distance from the origin to the vector p1 + t * v1.
+    Return as +ve if in y >= 0 plane.
     """
-    res = [p1[0] - p2[0], p1[1] - p2[1]]
-    if irred:
-        k = gcd(res[0], res[1])
-        if k == 0:
-            k = 1
-        res = (res[0] // k, res[1] // k)
-    return tuple(res)
+    if p1 == (0, 0):
+        return 0
+    orth_vec = -1 * v1[1], v1[0]
+    L1 = LineTriple(p1, (p1[0] + v1[0], p1[1] + v1[1]))
+    L2 = LineTriple((0, 0), orth_vec)
+    x, y = Intersection(L1, L2)
+    d = Dist((0, 0), (x, y))
+    if y >= 0:
+        return d
+    else:
+        return -d
 
 
-def LineTriple(p1, p2):
-    A = (p1[1] - p2[1])
-    B = (p2[0] - p1[0])
-    C = (p1[0]*p2[1] - p2[0]*p1[1])
-    return A, B, -C
+def GenVector(p1, p2):
+    """
+    Return a 'unit' vector from one p1 = (x1, y1) to p2 = (x2, y2),
+    with irreducible, integer components.
+    """
+    unit_vec = [p1[0] - p2[0], p1[1] - p2[1]]
+    k = gcd(unit_vec[0], unit_vec[1])
+    if k == 0:
+        k = 1
+    unit_vec = (unit_vec[0] // k, unit_vec[1] // k)
+    return tuple(unit_vec)
 
 
 def Intersection(L1, L2):
+    """
+    Intersection of two lines computed with Cramers Rule:
+    https://en.wikipedia.org/wiki/Cramer%27s_rule
+    """
     D = L1[0] * L2[1] - L1[1] * L2[0]
     Dx = L1[2] * L2[1] - L1[1] * L2[2]
     Dy = L1[0] * L2[2] - L1[2] * L2[0]
@@ -96,72 +95,17 @@ def Intersection(L1, L2):
         return False
 
 
+def LineTriple(p1, p2):
+    A = (p1[1] - p2[1])
+    B = (p2[0] - p1[0])
+    C = (p1[0]*p2[1] - p2[0]*p1[1])
+    return A, B, -C
+
+
 def Dist(p1, p2):
     """Distance between two points (x1, y1), (x2, y2)."""
     d = math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
     return d
-
-
-def DictLookup(point1, point2, vectors_dict):
-    """
-    Order of keys matters
-    """
-    if (point1, point2) in vectors_dict:
-        vec = vectors_dict[(point1, point2)]
-    else:
-        vec = vectors_dict[(point2, point1)]
-    return vec
-
-
-def IsRhombus3(pair1, pair2, unit_vec):
-    # Check to for other parralel lines
-    tol = 0.00001
-    p1, _ = pair1
-    orth_vec = -1 * unit_vec[1], unit_vec[0]
-    for p in pair2:
-        if 0 in orth_vec:
-            j = orth_vec.index(0)
-            if p1[j] != p[j]:
-                break
-            else:
-                return True
-        tx = float(p1[0] - p[0]) / orth_vec[0]
-        ty = float(p1[1] - p[1]) / orth_vec[1]
-        if abs(tx - ty) < tol:
-            return True
-    return False
-
-
-def IsRhombus1(pair1, pair2, vectors_dict):
-    # Check to for other parralel lines
-    l1 = DictLookup(pair1[0], pair2[0], vectors_dict)
-    l2 = DictLookup(pair1[1], pair2[1], vectors_dict)
-    l3 = DictLookup(pair1[0], pair2[1], vectors_dict)
-    l4 = DictLookup(pair1[1], pair2[0], vectors_dict)
-    if len(set([l1, l2, l3, l4])) < 4:
-        return True
-    return False
-
-
-def IsRhombus2(pair1, pair2):
-    # Check for other parralel lines
-    l1 = GenVector(pair1[0], pair2[0], irred=False)
-    l2 = GenVector(pair1[1], pair2[1], irred=False)
-    l3 = GenVector(pair1[0], pair2[1], irred=False)
-    l4 = GenVector(pair1[1], pair2[0], irred=False)
-    if IsParrallel(l1, l2) or IsParrallel(l3, l4):
-        return True
-    return False
-
-
-def IsParrallel(v1, v2):
-    epsilon = 0.000001
-    scalar_product = sum(i[0] * i[1] for i in zip(v1, v2))
-    length1 = math.sqrt(v1[0] ** 2 + v1[1] ** 2)
-    length2 = math.sqrt(v2[0] ** 2 + v2[1] ** 2)
-    if scalar_product/(length1*length2) > 1 - epsilon:
-        return True
-    return False
 
 
 if __name__ == '__main__':
