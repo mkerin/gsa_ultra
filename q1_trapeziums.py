@@ -41,11 +41,11 @@ def solution(D):
     # Create dict of parrallel lines
     print("Create Parrallel points")
     parrallel_pts = dict()
-    vectors_dict = dict()
+    # vectors_dict = dict()
     for pair in it.combinations(D, 2):
         unit_vec = GenVector(pair[0], pair[1])
         orth_dist = GenOrthDistFromOrigin(pair[0], unit_vec)
-        vectors_dict[pair] = unit_vec
+        # vectors_dict[pair] = unit_vec
         
         if unit_vec not in parrallel_pts:
             parrallel_pts[unit_vec] = dict()
@@ -56,18 +56,20 @@ def solution(D):
     
     # Compute areas.
     A = 0
+    traps = set()
     for unit_vec, inner_dict in parrallel_pts.items():
         for orth_dist1, orth_dist2 in it.combinations(inner_dict.keys(), 2):
+            h = abs(orth_dist2 - orth_dist1)
             for pair1, pair2 in it.product(inner_dict[orth_dist1],
                                            inner_dict[orth_dist2]):
-                x = Dist(pair1[0], pair1[1])
-                y = Dist(pair2[0], pair2[1])
-                h = abs(orth_dist2 - orth_dist1)
-                a = (x+y) * h / 2
-                if IsRhombus1(pair1, pair2, vectors_dict):
-                # if IsRhombus3(pair1, pair2, unit_vec):
-                    a *= 0.5
-                A += a
+                trap = frozenset([pair1[0], pair1[1], pair2[1], pair2[0]])
+                if trap not in traps:
+                    x = Dist(pair1[0], pair1[1])
+                    y = Dist(pair2[0], pair2[1])
+                    a = (x+y) * h / 2
+                    A += a
+                    traps.add(trap)
+
     return "{:0.2f}".format(10*A).replace(".", "")
 
 
