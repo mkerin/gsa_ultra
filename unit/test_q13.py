@@ -4,7 +4,7 @@ import math
 from os import path
 
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
-from q13_dragons import GenMidpoints, XYtoTheta, DistFromOrigin, Point, solution
+from q13_dragons import GenMidpoints, XYtoTheta, DistFromOrigin, Point, solution, Midpoint
 
 
 class TestQ13(unittest.TestCase):
@@ -18,7 +18,7 @@ class TestQ13(unittest.TestCase):
     
     def test_DistFromOrigin(self):
         painting = (1, 0, 0, 1)
-        midpoint = Point(1, 1, XYtoTheta(1, 1))
+        midpoint = Midpoint(1, 1, XYtoTheta(1, 1))
         ans = 1.0 / math.sqrt(2)
         self.assertAlmostEqual(DistFromOrigin(midpoint, painting), ans)
 
@@ -39,6 +39,14 @@ class TestQ13(unittest.TestCase):
                 T.append(tuple(p))
         T = tuple(T)
         self.assertEqual(solution(T), 289)
+
+    def test_midpoint(self):
+        m = Midpoint(1, 0, math.pi)
+        m.pids_inline = set([1, 2, 3])
+        self.assertEqual(m.pid, None)
+        self.assertEqual(m.side, None)
+        self.assertEqual(m.pids_inline, set([1, 2, 3]))
+        
 
 if __name__ == '__main__':
     unittest.main()
