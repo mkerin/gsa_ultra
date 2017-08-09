@@ -32,6 +32,13 @@ class TestQ13(unittest.TestCase):
              (15, -100, 100, -20),
              (82, -90, 95, -40))
         self.assertEqual(solution(T), 7)
+        with open("q13_input.txt") as f:
+            T = []
+            for line in f:
+                p = [int(x) for x in line.rstrip("/n").split()]
+                T.append(tuple(p))
+        T = tuple(T)
+        self.assertEqual(solution(T), 289)
 
 if __name__ == '__main__':
     unittest.main()

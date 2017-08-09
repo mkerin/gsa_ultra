@@ -6,9 +6,18 @@ from collections import namedtuple
 # constants
 max_int = 10**9
 
-# Instantiating namedtuples
-Point = namedtuple("Point", ["x", "y", "theta"])
-View = namedtuple("View", ["pid", "dist"])
+# Instantiating Point + View classes
+class Point(object):
+    def __init__(self, x, y, theta):
+        self.x = x
+        self.y = y
+        self.theta = theta
+
+
+class View(object):
+    def __init__(self, pid, dist):
+        self.pid = pid
+        self.dist = dist
 
 
 def solution(T):
@@ -148,6 +157,6 @@ if __name__ == '__main__':
         for line in f:
             p = [int(x) for x in line.rstrip("/n").split()]
             T.append(tuple(p))
-        T = tuple(T)
-        res = solution(T)
-        print(res)
+    T = tuple(T)
+    res = solution(T)
+    print(res)
