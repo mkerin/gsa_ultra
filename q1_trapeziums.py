@@ -42,6 +42,7 @@ def solution(D):
     Should give all parrallel lines.
     """
     # Create dict of parrallel lines
+    print("Create Parrallel points")
     parrallel_pts = dict()
     vectors_dict = dict()
     for pair in it.combinations(D, 2):
@@ -56,6 +57,8 @@ def solution(D):
     # Want vectors parrallel to multiple pairs
     parrallel_pts = {key: val for key, val in parrallel_pts.items() if len(val) > 1}
     
+    # for key in parrallel_pts.keys():
+    #     print("{}: {}".format(key, parrallel_pts[key]))
     # Compute areas.
     A = 0
     for unit_vec, inner_dict in parrallel_pts.items():
@@ -66,6 +69,7 @@ def solution(D):
                 y = Dist(pair2[0], pair2[1])
                 h = abs(orth_dist2 - orth_dist1)
                 a = (x+y) * h / 2
+                print("{}, {}: {}".format(pair1, pair2, a))
                 if IsRhombus1(pair1, pair2, vectors_dict):
                     a *= 0.5
                 A += a
