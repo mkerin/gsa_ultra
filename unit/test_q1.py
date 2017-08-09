@@ -4,7 +4,7 @@ import math
 from os import path
 
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
-from q1_trapeziums import GenVector, solution, Intersection, Line, Dist, GenOrthDistFromOrigin
+from q1_trapeziums import GenVector, solution, Intersection, LineTriple, Dist, GenOrthDistFromOrigin
 
 
 class TestQ6(unittest.TestCase):
@@ -32,8 +32,8 @@ class TestQ6(unittest.TestCase):
         unit_vec = GenVector(pair1[0], pair1[1])
         
         orth_vec = -1 * unit_vec[0], unit_vec[1]
-        L1 = Line(pair1[0], (pair1[0][0] + orth_vec[0], pair1[0][1] + orth_vec[1]))
-        L2 = Line(pair2[0], pair2[1])
+        L1 = LineTriple(pair1[0], (pair1[0][0] + orth_vec[0], pair1[0][1] + orth_vec[1]))
+        L2 = LineTriple(pair2[0], pair2[1])
         x, y = Intersection(L1, L2)
 
         self.assertEqual(orth_vec, (-1, 1))

@@ -15,8 +15,8 @@ def GenOrthDistFromOrigin(p1, v1):
     if p1 == (0, 0):
         return 0
     orth_vec = -1 * v1[1], v1[0]
-    L1 = Line(p1, (p1[0] + v1[0], p1[1] + v1[1]))
-    L2 = Line((0, 0), orth_vec)
+    L1 = LineTriple(p1, (p1[0] + v1[0], p1[1] + v1[1]))
+    L2 = LineTriple((0, 0), orth_vec)
     try:
         x, y = Intersection(L1, L2)
     except TypeError:
@@ -27,10 +27,6 @@ def GenOrthDistFromOrigin(p1, v1):
         return d
     else:
         return -d
-
-
-def GenParrallelPts(D):
-    pass
 
 
 def solution(D):
@@ -49,26 +45,19 @@ def solution(D):
         
         if unit_vec not in parrallel_pts:
             parrallel_pts[unit_vec] = dict()
-        parrallel_pts[unit_vec].setdefault(orth_dist, []).append(pair)
+        x = Dist(pair[0], pair[1])
+        parrallel_pts[unit_vec].setdefault(orth_dist, []).append(x)
 
     # Want vectors parrallel to multiple pairs
     parrallel_pts = {key: val for key, val in parrallel_pts.items() if len(val) > 1}
     
     # Compute areas.
     A = 0
-    traps = set()
     for unit_vec, inner_dict in parrallel_pts.items():
         for orth_dist1, orth_dist2 in it.combinations(inner_dict.keys(), 2):
             h = abs(orth_dist2 - orth_dist1)
-            for pair1, pair2 in it.product(inner_dict[orth_dist1],
-                                           inner_dict[orth_dist2]):
-                trap = frozenset([pair1[0], pair1[1], pair2[1], pair2[0]])
-                if trap not in traps:
-                    x = Dist(pair1[0], pair1[1])
-                    y = Dist(pair2[0], pair2[1])
-                    a = (x+y) * h / 2
-                    A += a
-                    traps.add(trap)
+            segs = sum(x if x == y else x+y for x, y in it.product(inner_dict[orth_dist1], inner_dict[orth_dist2]))
+            A += segs * h / 2
 
     return "{:0.2f}".format(10*A).replace(".", "")
 
@@ -87,7 +76,7 @@ def GenVector(p1, p2, irred=True):
     return tuple(res)
 
 
-def Line(p1, p2):
+def LineTriple(p1, p2):
     A = (p1[1] - p2[1])
     B = (p2[0] - p1[0])
     C = (p1[0]*p2[1] - p2[0]*p1[1])
