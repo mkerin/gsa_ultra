@@ -169,10 +169,13 @@ def IsParrallel(v1, v2):
 
 if __name__ == '__main__':
     D = []
+    N = 20
     with open('q1_input.txt') as f:
-        for line in f:
+        for n, line in enumerate(f):
             c1, c2 = line.rstrip("/n").split()
             D.append((int(c1), int(c2)))
+            if n > N:
+                break
     D = tuple(D)
     res = solution(D)
     print(res)

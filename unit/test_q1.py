@@ -56,6 +56,36 @@ class TestQ6(unittest.TestCase):
     def test_sol(self):
         D = ((0, 0), (1, 0), (1, 1), (0, 1), (1, 2))
         self.assertEqual(solution(D), "3500")
+        # partial solutions
+        N = 10
+        D = []
+        with open('q1_input.txt') as f:
+            for n, line in enumerate(f):
+                c1, c2 = line.rstrip("/n").split()
+                D.append((int(c1), int(c2)))
+                if n > N:
+                    break
+        D = tuple(D)
+        self.assertEqual(solution(D), "18778000")
+
+        N = 20
+        D = []
+        with open('q1_input.txt') as f:
+            for n, line in enumerate(f):
+                c1, c2 = line.rstrip("/n").split()
+                D.append((int(c1), int(c2)))
+                if n > N:
+                    break
+        D = tuple(D)
+        self.assertEqual(solution(D), "115084000")
+        # full solution
+        D = []
+        with open('q1_input.txt') as f:
+            for line in f:
+                c1, c2 = line.rstrip("/n").split()
+                D.append((int(c1), int(c2)))
+        D = tuple(D)
+        self.assertEqual(solution(D), "8432388074000")
 
 
 if __name__ == '__main__':
