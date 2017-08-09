@@ -1,12 +1,10 @@
 # Please write your code inside the function stub below.
+# python -m cProfile -s cumtime q13_dragons.py
 import math
 import itertools as it
 from collections import namedtuple
 
-# constants
-max_int = 10**9
 
-# Instantiating Point + View classes
 class Point(object):
     def __init__(self, x, y, theta):
         self.x = x
@@ -39,27 +37,18 @@ def solution(T):
     points: list of Named Tuples
     """
     
-    ## setup - mid_thetas, mid_vectors, V
+    # setup - mid_thetas, mid_vectors, V
     print("Generating points")
     points = []
     for x1, y1, x2, y2 in T:
         points.append(Point(x1, y1, XYtoTheta(x1, y1)))
         points.append(Point(x2, y2, XYtoTheta(x2, y2)))
     print("Points read in")
-    try:
-        points.sort(key=lambda x: x.theta)
-    except:
-        print("unsure why this doesn't work")
-        print(points[0])
-        p = points[0]
-        print(type(p.x))
-        print(type(p[0]))
-        print(type(p.y))
-        print(type(p.theta))
+    points.sort(key=lambda x: x.theta)
     
     print("Generating midpoints")
     midpoints = GenMidpoints(points)
-    V = [View(None, max_int) for x in range(len(midpoints))]
+    V = [View(None, float("Inf")) for x in range(len(midpoints))]
     
     print("Evaluating closest paintings")
     for pid, p in enumerate(T):
