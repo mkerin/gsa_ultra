@@ -15,17 +15,14 @@ def solution(n):
     eg. 4x -> 8x where 16x > n
     etc
     """
-    L = GenL(n)
-    swaps = GenSwaps(n)
+    L = gen_L(n)
+    swaps = compute_swaps(n)
     W = 2 ** swaps
     return str(L) + str(W)
 
 
-def GenL(n):
-    """
-    Func to generate L, the length of the
-    longest cool sequence of ints <= n
-    """
+def gen_L(n):
+    """Return L = length of the longest 'cool sequence' from {1,..,n}."""
     # find greatest even power of 2 <= n
     M = int(math.log(n, 2))
     M -= (M % 2)
@@ -38,10 +35,10 @@ def GenL(n):
     return L
 
 
-def GenSwaps(n):
+def compute_swaps(n):
     """
-    Func to compute number of elements,
-    or groups of elements, that we can swap.
+    Compute number of elements, or groups of elements, that we can swap
+    whilst not breaking 'cool sequence' properties.
     """
     # max power of 2
     M = int(math.log(n, 2))
@@ -50,7 +47,8 @@ def GenSwaps(n):
 
     # 1-1 swaps for x -> 2x. eg. 11 -> 22, 13 -> 26
     for m in range(0, M+2, 2):
-        swaps += (godd(n // 2 ** (m+1)) - godd(n // 2 ** (m+2))) / 2
+        swaps += (greatest_odd(n // 2 ** (m+1)) -
+                  greatest_odd(n // 2 ** (m+2))) / 2
 
     # unit swaps eg. 1, 4, 16 -> 2, 8, 32
     # 1. consider odd numbers v up to some sensible range.
@@ -66,8 +64,8 @@ def GenSwaps(n):
     return swaps
 
 
-def godd(v):
-    # returns greatest odd <= v, st odd > 0.
+def greatest_odd(v):
+    """Returns greatest odd <= v, st odd > 0."""
     if v % 2 == 0:
         v -= 1
     if v < 0:
