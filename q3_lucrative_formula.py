@@ -20,3 +20,14 @@ def min_bottles(n, d):
     """Minimum integer b st 2 ** (b*d) >= n."""
     res = math.ceil(1.0/d * math.log(n, 2))
     return int(res)
+
+
+if __name__ == '__main__':
+    test_cases = []
+    with open('input/q3_input.txt', 'r') as f:
+        for line in f:
+            test_cases.append(tuple(int(x) for x in line.strip('\r\n').split()))
+    test_cases = tuple(test_cases)
+    print("Running on test case: {}".format(test_cases))
+    res = solution(test_cases)
+    print(res)
