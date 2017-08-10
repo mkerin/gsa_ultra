@@ -52,7 +52,7 @@ def preprocess(j, D):
             excess.append(d)
             edges.append(cost)
             cost = 1
-    edges.pop(0)  # 'Ninja John' starts here.
+    edges.pop(0)  # Discard first entry; 'Ninja John' starts here.
     return excess, edges
 
 

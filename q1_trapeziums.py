@@ -22,13 +22,13 @@ def solution(D):
     """
     print("Create nested dicts of parallel points on the same plane")
     parallel_pts = dict()
-    for pair in it.combinations(D, 2):
-        unit_vec = GenVector(pair[0], pair[1])
-        orth_dist = GenOrthDistFromOrigin(pair[0], unit_vec)
+    for point1, point2 in it.combinations(D, 2):
+        unit_vec = gen_unit_vector(point1, point2)
+        orth_dist = gen_orth_dist_from_origin(point1, unit_vec)
         
         if unit_vec not in parallel_pts:
             parallel_pts[unit_vec] = dict()
-        x = Dist(pair[0], pair[1])
+        x = euclidean_dist(point1, point2)
         parallel_pts[unit_vec].setdefault(orth_dist, []).append(x)
 
     # Want vectors parrallel to multiple pairs
@@ -47,7 +47,7 @@ def solution(D):
     return "{:0.2f}".format(10*A).replace(".", "")
 
 
-def GenOrthDistFromOrigin(p1, v1):
+def gen_orth_dist_from_origin(p1, v1):
     """
     Orthogonal distance from the origin to the vector p1 + t * v1.
     Return as +ve if in y >= 0 plane.
@@ -55,17 +55,17 @@ def GenOrthDistFromOrigin(p1, v1):
     if p1 == (0, 0):
         return 0
     orth_vec = -1 * v1[1], v1[0]
-    L1 = LineTriple(p1, (p1[0] + v1[0], p1[1] + v1[1]))
-    L2 = LineTriple((0, 0), orth_vec)
-    x, y = Intersection(L1, L2)
-    d = Dist((0, 0), (x, y))
+    L1 = gen_hyperplane(p1, (p1[0] + v1[0], p1[1] + v1[1]))
+    L2 = gen_hyperplane((0, 0), orth_vec)
+    x, y = find_intersection(L1, L2)
+    d = euclidean_dist((0, 0), (x, y))
     if y >= 0:
         return d
     else:
         return -d
 
 
-def GenVector(p1, p2):
+def gen_unit_vector(p1, p2):
     """
     Return a 'unit' vector from one p1 = (x1, y1) to p2 = (x2, y2),
     with irreducible, integer components.
@@ -78,7 +78,7 @@ def GenVector(p1, p2):
     return tuple(unit_vec)
 
 
-def Intersection(L1, L2):
+def find_intersection(L1, L2):
     """
     Intersection of two lines computed with Cramers Rule:
     https://en.wikipedia.org/wiki/Cramer%27s_rule
@@ -95,14 +95,15 @@ def Intersection(L1, L2):
         return False
 
 
-def LineTriple(p1, p2):
+def gen_hyperplane(p1, p2):
+    """For use in conjuction with find_intersection."""
     A = (p1[1] - p2[1])
     B = (p2[0] - p1[0])
     C = (p1[0]*p2[1] - p2[0]*p1[1])
     return A, B, -C
 
 
-def Dist(p1, p2):
+def euclidean_dist(p1, p2):
     """Distance between two points (x1, y1), (x2, y2)."""
     d = math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
     return d
@@ -110,13 +111,10 @@ def Dist(p1, p2):
 
 if __name__ == '__main__':
     D = []
-    N = 20
-    with open('q1_input.txt') as f:
+    with open('input/q1_input.txt') as f:
         for n, line in enumerate(f):
             c1, c2 = line.rstrip("/n").split()
             D.append((int(c1), int(c2)))
-            if n > N:
-                break
     D = tuple(D)
     res = solution(D)
     print(res)
