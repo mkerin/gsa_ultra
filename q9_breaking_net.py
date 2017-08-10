@@ -5,13 +5,10 @@ MOD = 10 ** 9 + 7
 
 
 def solution(n):
-    """
-    Recursive solution?
-    See project euler Q on coin combinations
-    """
-    return recurse_func(n, 4)
+    return find_throw_combos(n, 4)
 
-def recurse_func(point_total, throw_score):
+
+def find_throw_combos(point_total, throw_score):
     """
     Recursive function to compute no. of combinations
     of throws that add up to make point_total.
@@ -32,7 +29,7 @@ def recurse_func(point_total, throw_score):
     else:
         res = 0
         while point_total >= 0:
-            res += recurse_func(point_total, throw_score - 1)
+            res += find_throw_combos(point_total, throw_score - 1)
             point_total -= throw_score
         res %= MOD
         return res
